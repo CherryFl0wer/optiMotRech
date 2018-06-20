@@ -1,17 +1,16 @@
 import sys
 import os
 import re
+import math
 import collections
 
 """
  Aide à la rédaction
 
- 1. Prend un ensemble de texte
- 2. Extraire les ngrams
- 3. Classer ces ngrams en utilisant TF-IDF
+ 1. Prend un ensemble de texte                          CHECK
+ 2. Extraire les ngrams                                 CHECK
+ 3. Classer ces ngrams en utilisant TF-IDF              CHECK
  4. Détecter la langue
-
- Support UTF8, plusieurs langues supporté sauf idéogramme (Chinois, Japonais, Koréan)
 
  Use of https://docs.python.org/2/library/collections.html
  Counter and Deque
@@ -19,7 +18,7 @@ import collections
 
 #ngrams = collections.Counter()
 
-nbgram = 2
+nbgram = 1
 
 
 def tokenize(text):
@@ -48,14 +47,16 @@ def idf(file):
                 if len(deck) >= nbgram:
                     ng = tuple(deck)
                     idfl[ng] = 1
-    
+
     return idfl
+
 
 """
     @description: Perform TF on all the documents 
 """
 
-def tf(file, tftotal):
+
+def tf(file):
     print("Processing TF {0}gram on {1} file".format(nbgram, file))
 
     deck = collections.deque(maxlen=nbgram)
@@ -76,16 +77,17 @@ def tf(file, tftotal):
                     ng = tuple(deck)
                     tf[ng] += 1
 
-    print(nb_word)
+    tftotal = {}
     for e in tf.most_common():
         freq = e[1] / nb_word
         tftotal[e[0]] = freq
 
+    return tftotal
 
 
 def setupIDF(path):
     counter = collections.Counter()
-    nb_files = 0 
+    nb_files = 0
     for root, dirs, files in os.walk(path):
         for file in files:
             nb_files += 1
@@ -95,15 +97,19 @@ def setupIDF(path):
     return counter, nb_files
 
 
-#TODO TF
-def calculateTF(path):
-    tf_freq = {}
-    
+def tfidf(tfdoc, idf, N): 
+    for gram, freq in tfdoc.items():
+       print("gram (", gram, ") = ", freq * math.log10(N / idf[gram]))
+
+
+def calculateTFIDF(path, idf, N):
+    print(N)
     for root, dirs, files in os.walk(path):
         for file in files:
-            tf(root + "/" + file, tf_freq)
+           tfOnDoc = tf(root + "/" + file)
+           tfidf(tfOnDoc, idf, N)
 
-    return tf_freq
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
@@ -114,7 +120,5 @@ if __name__ == '__main__':
     folder = sys.argv[2]
 
     idf, nb_files = setupIDF(folder)
-    tf = calculateTF(folder)
-
+    calculateTFIDF(folder, idf, nb_files)
     
-   # print(ngrams.most_common(10))
