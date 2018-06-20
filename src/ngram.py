@@ -4,7 +4,7 @@ import re
 import math
 import codecs
 import collections
-
+from operator import itemgetter
 """
  Aide à la rédaction
 
@@ -24,7 +24,8 @@ nbgram = 1
 
 def tokenize(text):
     text = text.lower()
-    return re.findall(r"<a.*?/a>|<[^\>]*>|[\w'@#]+", text)
+    replaced = re.sub(r"/[0-9]/g", "", text)
+    return re.findall(r"<a.*?/a>|<[^\>]*>|[\w'@#]+", replaced)
 
 
 """
@@ -99,14 +100,16 @@ def setupIDF(path):
 
 
 def tfidf(tfdoc, idf, N):
-    with open("result.csv", "a") as result:
-        for gram, freq in tfdoc.items():
-            s = gram[0] + "," + str(freq * math.log(N / idf[gram])) + "\n"
-            result.write(s)
+    tmp = {}
+    for gram, freq in tfdoc.items():
+        tmp[gram] = freq * math.log(N / idf[gram])
+
+    with open("lg.csv", "a") as f:
+        for key, value in sorted(tmp.items(), key=itemgetter(1), reverse=True):
+            f.write(str(key) + "," + str(value) + "\n")
 
 
 def calculateTFIDF(path, idf, N):
-    print(N)
     for root, dirs, files in os.walk(path):
         for file in files:
             tfOnDoc = tf(root + "/" + file)
