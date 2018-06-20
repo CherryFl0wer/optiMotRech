@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import math
+import codecs
 import collections
 
 """
@@ -37,9 +38,9 @@ def idf(file):
 
     deck = collections.deque(maxlen=nbgram)
     idfl = collections.Counter()
-    with open(file, 'rb') as f:
+    with codecs.open(file, encoding='utf-8') as f:
         for line in f:
-            line = str(line, 'UTF-8')
+            line = repr(line)
             tokens = tokenize(line)
 
             for w in tokens:
@@ -64,9 +65,9 @@ def tf(file):
 
     tf = collections.Counter()
 
-    with open(file, 'rb') as f:
+    with codecs.open(file, encoding='utf-8') as f:
         for line in f:
-            line = str(line, 'UTF-8')
+            line = repr(line)
             tokens = tokenize(line)
 
             nb_word += len(tokens)
@@ -97,18 +98,19 @@ def setupIDF(path):
     return counter, nb_files
 
 
-def tfidf(tfdoc, idf, N): 
-    for gram, freq in tfdoc.items():
-       print("gram (", gram, ") = ", freq * math.log10(N / idf[gram]))
+def tfidf(tfdoc, idf, N):
+    with open("result.csv", "a") as result:
+        for gram, freq in tfdoc.items():
+            s = gram[0] + "," + str(freq * math.log(N / idf[gram])) + "\n"
+            result.write(s)
 
 
 def calculateTFIDF(path, idf, N):
     print(N)
     for root, dirs, files in os.walk(path):
         for file in files:
-           tfOnDoc = tf(root + "/" + file)
-           tfidf(tfOnDoc, idf, N)
-
+            tfOnDoc = tf(root + "/" + file)
+            tfidf(tfOnDoc, idf, N)
 
 
 if __name__ == '__main__':
@@ -121,4 +123,3 @@ if __name__ == '__main__':
 
     idf, nb_files = setupIDF(folder)
     calculateTFIDF(folder, idf, nb_files)
-    
