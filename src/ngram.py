@@ -99,30 +99,47 @@ def setupIDF(path):
     return counter, nb_files
 
 
-def tfidf(tfdoc, idf, N):
+def tfidf(tfdoc, idf, N, output_file):
     tmp = {}
     for gram, freq in tfdoc.items():
         tmp[gram] = freq * math.log(N / idf[gram])
 
-    with open("lg.csv", "a") as f:
+    with open(output_file, "a", encoding="utf-8") as f:
         for key, value in sorted(tmp.items(), key=itemgetter(1), reverse=True):
-            f.write(str(key) + "," + str(value) + "\n")
+            try:
+                f.write(str(key) + "," + str(value) + '\n')
+                break
+            except:
+                print('Error writing ' + str(key) + ", " + str(value) + 'to ' + output_file)
 
 
-def calculateTFIDF(path, idf, N):
+
+def calculateTFIDF(path, idf, N, output_file):
     for root, dirs, files in os.walk(path):
         for file in files:
             tfOnDoc = tf(root + "/" + file)
-            tfidf(tfOnDoc, idf, N)
+            tfidf(tfOnDoc, idf, N, output_file)
 
 
+# Usage:
+# $ python ngram.py TEXT_FOLDER [OUPUT_FILE='output.csv'] [NB_GRAM=1]
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         print('You need to precise a folder or a text file and the number of ngram')
+        print('Usage: $ python ngram.py TEXT_FOLDER [OUPUT_FILE=\'output.csv\'] [NB_GRAM=1]')
         sys.exit(1)
 
-    nbgram = int(sys.argv[1])
-    folder = sys.argv[2]
+    input_folder = sys.argv[1]
+    output_file = 'output.csv'
+    nbgram = 2
+    if len(sys.argv) >= 3:
+        output_file = sys.argv[2]
+    if len(sys.argv) >= 4:
+        nbgram = int(sys.argv[3])
+    print('Starting calculating TF-IDF with parameters:')
+    print('  - input_folder: ' + input_folder)
+    print('  - output_file: ' + output_file)
+    print('  - nbgram: ' + str(nbgram))
 
-    idf, nb_files = setupIDF(folder)
-    calculateTFIDF(folder, idf, nb_files)
+    idf, nb_files = setupIDF(input_folder)
+    calculateTFIDF(input_folder, idf, nb_files, output_file)
