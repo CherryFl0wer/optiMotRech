@@ -24,8 +24,8 @@ nbgram = 1
 
 def tokenize(text):
     text = text.lower()
-    replaced = re.sub(r"/[0-9]/g", "", text)
-    return re.findall(r"<a.*?/a>|<[^\>]*>|[\w'@#]+", replaced)
+    replaced = re.sub(r"[0-9]", "", text)
+    return re.findall(r"<a.*?/a>|[\w]+", replaced)
 
 
 """
@@ -108,7 +108,6 @@ def tfidf(tfdoc, idf, N, output_file):
         for key, value in sorted(tmp.items(), key=itemgetter(1), reverse=True):
             try:
                 f.write(str(key) + "," + str(value) + '\n')
-                break
             except:
                 print('Error writing ' + str(key) + ", " + str(value) + 'to ' + output_file)
 
@@ -131,7 +130,7 @@ if __name__ == '__main__':
 
     input_folder = sys.argv[1]
     output_file = 'output.csv'
-    nbgram = 2
+    nbgram = 1
     if len(sys.argv) >= 3:
         output_file = sys.argv[2]
     if len(sys.argv) >= 4:
