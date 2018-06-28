@@ -24,8 +24,9 @@ nbgram = 1
 
 def tokenize(text):
     text = text.lower()
-    replaced = re.sub(r"[0-9]", "", text)
-    return re.findall(r"<a.*?/a>|[\w]+", replaced)
+    without_eol = re.sub(r"\\r|\\n", "", text)
+    without_numbers = re.sub(r"\w*[0-9]\w*", "", without_eol)
+    return re.findall(r"<a.*?/a>|[\w]+", without_numbers)
 
 
 """
