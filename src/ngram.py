@@ -103,7 +103,7 @@ def setupIDF(path):
 def tfidf(tfdoc, idf, N, output_file):
     tmp = {}
     for gram, freq in tfdoc.items():
-        tmp[gram] = freq * math.log(N / idf[gram])
+        tmp[gram] = freq * math.log(N / idf[gram], 10)
 
     with open(output_file, "a", encoding="utf-8") as f:
         for key, value in sorted(tmp.items(), key=itemgetter(1), reverse=True):
@@ -143,3 +143,4 @@ if __name__ == '__main__':
 
     idf, nb_files = setupIDF(input_folder)
     calculateTFIDF(input_folder, idf, nb_files, output_file)
+    print('Result available in ' + output_file)
