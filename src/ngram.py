@@ -17,11 +17,6 @@ from operator import itemgetter
  Counter and Deque
 """
 
-#ngrams = collections.Counter()
-
-nbgram = 1
-
-
 def tokenize(text):
     text = text.lower()
     without_eol = re.sub(r"\\r|\\n", "", text)
@@ -35,7 +30,7 @@ def tokenize(text):
 """
 
 
-def idf(file):
+def idf(file, nbgram):
     print("Processing IDF {0}gram on {1} file".format(nbgram, file))
 
     deck = collections.deque(maxlen=nbgram)
@@ -59,7 +54,7 @@ def idf(file):
 """
 
 
-def tf(file):
+def tf(file, nbgram):
     print("Processing TF {0}gram on {1} file".format(nbgram, file))
 
     deck = collections.deque(maxlen=nbgram)
@@ -88,13 +83,13 @@ def tf(file):
     return tftotal
 
 
-def setupIDF(path):
+def setupIDF(path, nbgram):
     counter = collections.Counter()
     nb_files = 0
     for root, dirs, files in os.walk(path):
         for file in files:
             nb_files += 1
-            ratio = idf(root + "/" + file)
+            ratio = idf(root + "/" + file, nbgram)
             counter += ratio
 
     return counter, nb_files
@@ -114,33 +109,36 @@ def tfidf(tfdoc, idf, N, output_file):
 
 
 
-def calculateTFIDF(path, idf, N, output_file):
+def calculateTFIDF(path, idf, N, output_file, nbgram):
     for root, dirs, files in os.walk(path):
         for file in files:
-            tfOnDoc = tf(root + "/" + file)
+            tfOnDoc = tf(root + "/" + file, nbgram)
             tfidf(tfOnDoc, idf, N, output_file)
 
-
-# Usage:
-# $ python ngram.py TEXT_FOLDER [OUPUT_FILE='output.csv'] [NB_GRAM=1]
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
+def tf_idf_main(argv):
+    if len(argv) < 2:
         print('You need to precise a folder or a text file and the number of ngram')
         print('Usage: $ python ngram.py TEXT_FOLDER [OUPUT_FILE=\'output.csv\'] [NB_GRAM=1]')
         sys.exit(1)
 
-    input_folder = sys.argv[1]
+    input_folder = argv[1]
     output_file = 'output.csv'
     nbgram = 1
-    if len(sys.argv) >= 3:
-        output_file = sys.argv[2]
-    if len(sys.argv) >= 4:
-        nbgram = int(sys.argv[3])
+    if len(argv) >= 3:
+        output_file = argv[2]
+    if len(argv) >= 4:
+        nbgram = int(argv[3])
     print('Starting calculating TF-IDF with parameters:')
     print('  - input_folder: ' + input_folder)
     print('  - output_file: ' + output_file)
     print('  - nbgram: ' + str(nbgram))
 
-    idf, nb_files = setupIDF(input_folder)
-    calculateTFIDF(input_folder, idf, nb_files, output_file)
+    idf, nb_files = setupIDF(input_folder, nbgram)
+    calculateTFIDF(input_folder, idf, nb_files, output_file, nbgram)
     print('Result available in ' + output_file)
+
+
+# Usage:
+# $ python ngram.py TEXT_FOLDER [OUPUT_FILE='output.csv'] [NB_GRAM=1]
+if __name__ == '__main__':
+    tf_idf_main(sys.argv)
